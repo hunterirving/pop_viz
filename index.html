@@ -2,75 +2,57 @@
 <html>
 <head>
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>">
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Population Visualizer</title>
-    <style>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Population Visualizer</title>
+	<style>
 		html {
 			background-color: lightgray;
 		}
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            max-width: 100%;
-            margin: 20px auto;
-            padding: 20px;
-        }
-
-        .title {
-            text-align: center;
-        }
-        
-        .input-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        input {
-            font-size: 24px;
-            padding: 8px;
-            width: 200px;
-        }
-        
-        .emoji-container {
-            font-size: 24px;
-            line-height: 1.4;
-            word-break: break-all;
+		body {
+			font-family: system-ui, -apple-system, sans-serif;
+			max-width: 100%;
+			margin: 20px auto;
+			padding: 20px;
+		}
+		.title {
+			text-align: center;
+		}
+		.input-container {
+			text-align: center;
+			margin-bottom: 20px;
+		}
+		input {
+			font-size: 24px;
+			padding: 8px;
+			width: 200px;
+		}
+		.emoji-container {
+			font-size: 24px;
+			line-height: 1.4;
+			word-break: break-all;
 			text-shadow: 1px 1px 1px black;
-        }
-        
-        .stats {
+		}
+		.rabbit {
+			text-shadow: 1px 1px 2px black;
+		}
+		.stats {
 			color: #666;
-            text-align: center;
-            margin: 20px;
+			text-align: center;
+			margin: 20px;
 			margin-bottom: 40px;
-            font-size: 16px;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        .emoji {
-            display: inline-block;
-            transition: transform 0.3s ease;
-        }
-
-        .emoji.animate {
-            animation: pulse 0.5s ease;
-        }
-		
-    </style>
+			font-size: 16px;
+		}
+	</style>
 </head>
 <body>
-    <h1 class="title">Population Visualizer 🐇</h1>
-    <div class="input-container">
+	<h1 class="title">Population Visualizer <span class="rabbit">🐇</span></h1>
+	<div class="input-container">
 		<input type="text" id="numberInput" placeholder="Enter a number" autocomplete="off">
-    </div>
-    <div class="stats" id="stats"></div>
-    <div class="emoji-container" id="emojiContainer"></div>
+	</div>
+	<div class="stats" id="stats"></div>
+	<div class="emoji-container" id="emojiContainer"></div>
 
 	<script>
 		const emojiList = [
@@ -78,70 +60,51 @@
 			'🧒🏻', '🧒🏼', '🧒🏽', '🧒🏾', '🧒🏿',
 			'🧓🏻', '🧓🏼', '🧓🏽', '🧓🏾', '🧓🏿'
 		];
-	
-		let animationInterval;
-	
+
 		function getRandomEmoji() {
 			return emojiList[Math.floor(Math.random() * emojiList.length)];
 		}
-	
+
 		function formatNumber(num) {
 			return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		}
-	
+
+		// Pre-generate a large pool of random emojis
+		const poolSize = 100000;
+		let randomPool = Array(poolSize).fill()
+			.map(() => emojiList[Math.floor(Math.random() * emojiList.length)]);
+
 		function updateEmojis() {
 			const input = document.getElementById('numberInput');
 			const container = document.getElementById('emojiContainer');
 			const stats = document.getElementById('stats');
 			
 			let number = parseInt(input.value.replace(/[^\d]/g, '')) || 0;
-			
 			input.value = formatNumber(number);
 			
-			container.innerHTML = '';
-			for (let i = 0; i < number; i++) {
-				const span = document.createElement('span');
-				span.className = 'emoji';
-				span.textContent = getRandomEmoji();
-				container.appendChild(span);
-			}
-			
 			if (number > 0) {
-				stats.textContent = `Showing ${formatNumber(number)} ${number === 1 ? 'person' : 'people'}. Each emoji represents one person.`;
-				startAnimation(number);
-			} else {
-				stats.textContent = '';
-				stopAnimation();
-			}
-		}
-	
-		function startAnimation(count) {
-			stopAnimation(); // Clear any existing interval
-	
-			// Calculate interval based on count, with a minimum of 25ms and maximum of 1000ms
-			const interval = Math.max(25, Math.min(1000, 1000 / Math.log(count + 1)));
-	
-			// Calculate how many emojis to animate at once
-			const animateCount = Math.max(1, Math.floor(count / 500));
-	
-			animationInterval = setInterval(() => {
-				const emojis = document.querySelectorAll('.emoji');
-				for (let i = 0; i < animateCount; i++) {
-					const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-					randomEmoji.classList.add('animate');
-					setTimeout(() => {
-						randomEmoji.classList.remove('animate');
-					}, 500);
+				let result = '';
+				
+				// Use chunks from the pool, shuffling each time
+				for (let i = 0; i < number; i += poolSize) {
+					// Fisher-Yates shuffle of the pool
+					for (let j = poolSize - 1; j > 0; j--) {
+						const k = Math.floor(Math.random() * (j + 1));
+						[randomPool[j], randomPool[k]] = [randomPool[k], randomPool[j]];
+					}
+					
+					const currentChunkSize = Math.min(poolSize, number - i);
+					result += randomPool.slice(0, currentChunkSize).join('');
 				}
-			}, interval);
-		}
-	
-		function stopAnimation() {
-			if (animationInterval) {
-				clearInterval(animationInterval);
+				
+				container.textContent = result;
+				stats.textContent = `Showing ${formatNumber(number)} ${number === 1 ? 'person' : 'people'}. Each emoji represents one person.`;
+			} else {
+				container.textContent = '';
+				stats.textContent = '';
 			}
 		}
-	
+
 		document.getElementById('numberInput').addEventListener('input', updateEmojis);
 	</script>
 </body>
