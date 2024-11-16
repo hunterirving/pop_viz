@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,7 +6,7 @@
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Population Visualizer</title>
+	<title>pop viz</title>
 	<style>
 		html {
 			background-color: lightgray;
@@ -23,10 +24,20 @@
 			text-align: center;
 			margin-bottom: 20px;
 		}
+
 		input {
 			font-size: 24px;
 			padding: 8px;
 			width: 200px;
+			border-radius: 50px;
+			padding-left: 20px;
+			padding-right: 20px;
+			outline: none;
+		}
+
+		::placeholder {
+			text-align: center;
+			margin-bottom:10px;
 		}
 		.emoji-container {
 			font-size: 24px;
@@ -35,7 +46,7 @@
 			text-shadow: 1px 1px 1px black;
 		}
 		.rabbit {
-			text-shadow: 1px 1px 2px black;
+			text-shadow: 1px 1px 1px black;
 		}
 		.stats {
 			color: #666;
@@ -47,9 +58,14 @@
 	</style>
 </head>
 <body>
-	<h1 class="title">Population Visualizer <span class="rabbit">🐇</span></h1>
+	<h1 class="title"><span class="rabbit">🐇</span><br>pop viz</h1>
 	<div class="input-container">
-		<input type="text" id="numberInput" placeholder="Enter a number" autocomplete="off">
+		<input type="text"
+			inputmode="numeric"
+			pattern="[0-9,]*"
+			id="numberInput"
+			placeholder="enter a number..."
+			autocomplete="off">
 	</div>
 	<div class="stats" id="stats"></div>
 	<div class="emoji-container" id="emojiContainer"></div>
@@ -79,8 +95,13 @@
 			const container = document.getElementById('emojiContainer');
 			const stats = document.getElementById('stats');
 			
+			// Remove any non-digits and parse
 			let number = parseInt(input.value.replace(/[^\d]/g, '')) || 0;
-			input.value = formatNumber(number);
+			
+			// Update input field with formatted number
+			if (number > 0) {
+				input.value = formatNumber(number);
+			}
 			
 			if (number > 0) {
 				let result = '';
@@ -98,14 +119,23 @@
 				}
 				
 				container.textContent = result;
-				stats.textContent = `Showing ${formatNumber(number)} ${number === 1 ? 'person' : 'people'}. Each emoji represents one person.`;
+				stats.innerHTML = `showing ${formatNumber(number)} ${number === 1 ? 'person' : 'people'}.<br>each emoji represents one person.`;
 			} else {
 				container.textContent = '';
 				stats.textContent = '';
+				input.value = '';
 			}
 		}
 
-		document.getElementById('numberInput').addEventListener('input', updateEmojis);
+		// Handle input events
+		const input = document.getElementById('numberInput');
+		input.addEventListener('input', updateEmojis);
+
+		input.addEventListener('keydown', function(e) {
+			if (e.key === 'Enter') {
+				input.blur();
+			}
+		});
 	</script>
 </body>
 </html>
