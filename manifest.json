@@ -1,0 +1,15 @@
+{
+	"name": "pop viz",
+	"short_name": "pop viz",
+	"icons": [
+		{
+			"src": "resources/icon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml"
+		}
+	],
+	"start_url": "/pop_viz/",
+	"display": "standalone",
+	"background_color": "#d3d3d3",
+	"theme_color": "#d3d3d3"
+}
