@@ -72,6 +72,42 @@
 	<div class="emoji-container" id="emojiContainer"></div>
 
 	<script>
+		// Cache files for offline PWA
+		if ('serviceWorker' in navigator) {
+			const swContent = `
+				const CACHE_NAME = 'pop-viz-cache-v1';
+				const urlsToCache = [
+					'/pop_viz/',
+					'/pop_viz/index.html',
+					'/pop_viz/manifest.json',
+					'/pop_viz/resources/icon.svg'
+				];
+
+				self.addEventListener('install', (event) => {
+					event.waitUntil(
+						caches.open(CACHE_NAME)
+							.then((cache) => cache.addAll(urlsToCache))
+					);
+				});
+
+				self.addEventListener('fetch', (event) => {
+					event.respondWith(
+						caches.match(event.request)
+							.then((response) => {
+								if (response) {
+									return response;
+								}
+								return fetch(event.request);
+							})
+					);
+				});
+			`;
+
+			const blob = new Blob([swContent], {type: 'text/javascript'});
+			const swUrl = URL.createObjectURL(blob);
+			navigator.serviceWorker.register(swUrl, { scope: '/pop_viz/' });
+		}
+
 		const emojiList = [
 			'🧑🏻', '🧑🏼', '🧑🏽', '🧑🏾', '🧑🏿',
 			'🧒🏻', '🧒🏼', '🧒🏽', '🧒🏾', '🧒🏿',
