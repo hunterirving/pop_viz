@@ -9,7 +9,7 @@
 		}
 	],
 	"start_url": "/pop_viz/",
-	"display": "standalone",
+	"display": "fullscreen",
 	"background_color": "#d3d3d3",
 	"theme_color": "#d3d3d3"
 }
